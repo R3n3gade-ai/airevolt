@@ -2,20 +2,15 @@
 
 import { useState, useEffect, useRef } from "react"
 import { CheckCircle2, Volume2 } from "lucide-react"
-import { processPayment } from "@/lib/authorize-net"
+import KitCheckoutButton from "@/components/KitCheckoutButton"
 
 export default function Upsell1Page() {
-  const [formData, setFormData] = useState({
-    cardNumber: "",
-    expirationDate: "",
-    cvv: "",
-  })
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
   const [isMuted, setIsMuted] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
   const [seatsRemaining, setSeatsRemaining] = useState(7)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  const kitUpsellUrl = "https://digital-arkitects.kit.com/products/ai-revolution-upsell?step=checkout"
 
   useEffect(() => {
     const timer1 = setTimeout(() => setSeatsRemaining(6), 20000) // 20 seconds
@@ -64,52 +59,6 @@ export default function Upsell1Page() {
     }
   }, [])
 
-  const handleAddToCart = async () => {
-    setIsProcessing(true)
-    setErrorMessage("")
-
-    const customerData = localStorage.getItem("leadData")
-    const customer = customerData ? JSON.parse(customerData) : {}
-
-    const result = await processPayment({
-      amount: "97.00",
-      cardNumber: formData.cardNumber.replace(/\s/g, ""),
-      expiryDate: formData.expirationDate.replace(/\s/g, ""),
-      cardCode: formData.cvv,
-      firstName: customer.firstName || "Customer",
-      lastName: customer.lastName || "Name",
-      email: customer.email || "customer@email.com",
-    })
-
-    setIsProcessing(false)
-
-    if (result.success) {
-      try {
-        const lastFour = formData.cardNumber.replace(/\s/g, "").slice(-4)
-
-        await fetch("/api/purchases", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firstName: customer.firstName,
-            lastName: customer.lastName,
-            email: customer.email,
-            phone: customer.phone || null,
-            amount: 97.0,
-            cardLastFour: lastFour,
-            transactionId: result.transactionId,
-            productType: "upsell-mega-97",
-          }),
-        })
-      } catch (error) {
-        console.error("Error saving upsell purchase:", error)
-      }
-
-      window.location.href = "/confirmation"
-    } else {
-      setErrorMessage(`Card declined: ${result.message || "Please try again."}`)
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 py-6 md:py-8 px-4">
@@ -186,65 +135,24 @@ export default function Upsell1Page() {
             <p className="text-lg mb-2">"I Don't Want Too Many People To Have This Mega Profit Module</p>
           </div>
 
-          <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
-            <input
-              type="text"
-              placeholder="Card Number"
-              value={formData.cardNumber}
-              onChange={(e) => setFormData({ ...formData, cardNumber: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-base"
+          <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 mb-6 text-center text-sm text-slate-700">
+            Complete your upgrade instantly using the Kit checkout below.
+          </div>
+
+          <div className="space-y-4">
+            <KitCheckoutButton
+              productUrl={kitUpsellUrl}
+              label="YES! ADD TO MY ORDER"
+              className="inline-flex w-full justify-center rounded-full bg-yellow-400 px-6 py-4 text-xl font-bold text-black shadow-lg transition hover:bg-yellow-500"
             />
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
-              <input
-                type="text"
-                placeholder="MM/YY"
-                value={formData.expirationDate}
-                onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
-                className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-base"
-              />
-              <input
-                type="text"
-                placeholder="CVV"
-                value={formData.cvv}
-                onChange={(e) => setFormData({ ...formData, cvv: e.target.value })}
-                className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-base"
-              />
-            </div>
+
+            <button
+              onClick={() => (window.location.href = "/confirmation")}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-base md:text-lg py-3 px-6 rounded-lg transition-all"
+            >
+              No thank you, I want to skip this page
+            </button>
           </div>
-
-          <button
-            onClick={handleAddToCart}
-            disabled={isProcessing}
-            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-xl md:text-2xl py-3 md:py-4 px-6 md:px-8 rounded-lg mb-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isProcessing ? "Processing..." : "ADD!"}
-          </button>
-
-          {/* Credit Card Logos */}
-          <div className="flex justify-center gap-2 mb-4">
-            <div className="text-xs text-gray-600">💳 Visa • Mastercard • Amex • Discover</div>
-          </div>
-
-          {/* Main CTA Link */}
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-              handleAddToCart()
-            }}
-            className="block text-blue-600 underline font-bold text-lg mb-2 hover:text-blue-800"
-          >
-            Click Here To Add To Cart NOW!
-          </a>
-
-          <p className="text-sm text-gray-600 mb-4">(Even if its 3:00 AM in The Morning)</p>
-
-          <button
-            onClick={() => (window.location.href = "/confirmation")}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-base md:text-lg py-3 px-6 rounded-lg transition-all mt-4 md:mt-6"
-          >
-            No thank you, I want to skip this page
-          </button>
         </div>
       </div>
     </div>

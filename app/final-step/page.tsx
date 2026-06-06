@@ -6,7 +6,6 @@ import { ChevronDown, Users, DollarSign, TrendingUp, HelpCircle, X, Volume2, Vol
 export default function FinalStepPage() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null)
   const [days, setDays] = useState(1)
-  const [showCheckout, setShowCheckout] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
   const [isPlaying, setIsPlaying] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -141,12 +140,12 @@ export default function FinalStepPage() {
                 <p className="text-xs md:text-sm mb-1">Regular Price: <span className="line-through">$599</span></p>
                 <p className="text-sm md:text-base font-bold mb-4">Today Only: $47</p>
                 <p className="text-xs text-gray-600 mb-6">Click before it's gone!</p>
-                <button
-                  onClick={() => setShowCheckout(true)}
-                  className="bg-[#5B5FED] hover:bg-[#4A4EDD] text-white font-bold py-3 px-6 md:px-8 rounded-full text-base md:text-lg transition-colors w-full"
-                >
-                  BUY NOW FOR $47
-                </button>
+              <a
+                href={kitProductUrl}
+                className="inline-flex items-center justify-center bg-[#5B5FED] hover:bg-[#4A4EDD] text-white font-bold py-3 px-6 md:px-8 rounded-full text-base md:text-lg transition-colors w-full"
+              >
+                BUY NOW FOR $47
+              </a>
               </div>
             </div>
           </div>
@@ -179,9 +178,12 @@ export default function FinalStepPage() {
             </div>
 
             <div className="text-center">
-              <button onClick={() => setShowCheckout(true)} className="bg-[#5B5FED] hover:bg-[#4A4EDD] text-white font-bold py-4 px-12 rounded-full text-xl transition-colors">
+              <a
+                href={kitProductUrl}
+                className="inline-flex items-center justify-center bg-[#5B5FED] hover:bg-[#4A4EDD] text-white font-bold py-4 px-12 rounded-full text-xl transition-colors"
+              >
                 GAIN ACCESS
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -196,29 +198,6 @@ export default function FinalStepPage() {
         </div>
       </footer>
 
-      {showCheckout && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full relative shadow-2xl my-8">
-            <button onClick={() => setShowCheckout(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
-              <X className="w-6 h-6" />
-            </button>
-
-            <h2 className="text-xl md:text-2xl font-bold text-center mb-2">Complete Your Order</h2>
-            <p className="text-center text-gray-600 text-sm md:text-base mb-6">Get instant access for only $47!</p>
-
-            <div className="flex justify-center">
-              <a
-                href={kitProductUrl}
-                className="inline-flex w-full justify-center rounded-full bg-[#5B5FED] px-6 py-4 text-base font-bold text-white shadow-lg transition hover:bg-[#4A4EDD]"
-              >
-                Buy for $47
-              </a>
-            </div>
-
-            <p className="text-xs text-center text-gray-500 mt-4">Secure checkout powered by Kit</p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

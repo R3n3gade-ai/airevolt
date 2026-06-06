@@ -14,7 +14,6 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
-
   const [leadData, setLeadData] = useState({ firstName: "", lastName: "", email: "", phone: "" })
 
   const handleLeadInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,11 +22,8 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const affiliateRef = urlParams.get("ref")
-    if (affiliateRef) {
-      localStorage.setItem("affiliateRef", affiliateRef)
-    }
+    const affiliateRef = new URLSearchParams(window.location.search).get("ref")
+    if (affiliateRef) localStorage.setItem("affiliateRef", affiliateRef)
   }, [])
 
   useEffect(() => {
@@ -50,28 +46,12 @@ export default function Home() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate)
   }, [showNextButton])
 
-  const toggleMute = () => {
-    if (!videoRef.current) return
-    videoRef.current.muted = !videoRef.current.muted
-    setIsMuted(!isMuted)
-  }
-
-  const togglePlayPause = () => {
-    if (!videoRef.current) return
-    if (videoRef.current.paused) {
-      videoRef.current.play()
-      setIsPlaying(true)
-    } else {
-      videoRef.current.pause()
-      setIsPlaying(false)
-    }
-  }
-
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setSubmitMessage("Success! Redirecting...")
+    setSubmitMessage("")
     localStorage.setItem("leadData", JSON.stringify(leadData))
+    setSubmitMessage("Success! Redirecting...")
     setTimeout(() => router.push("/final-step"), 1200)
   }
 
@@ -91,15 +71,15 @@ export default function Home() {
               poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'%3E%3Crect width='1200' height='675' fill='%23000'/%3E%3C/svg%3E"
               src="https://gkbipciso4g0l0uv.public.blob.vercel-storage.com/main.mp4.mp4"
             />
-            <button onClick={togglePlayPause} className="absolute top-2 left-2 md:top-4 md:left-4 bg-black/50 text-white p-2 md:p-3 rounded-full z-10">
+            <button onClick={() => videoRef.current && ((videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause()), setIsPlaying(videoRef.current.paused))} className="absolute top-2 left-2 md:top-4 md:left-4 bg-black/50 text-white p-2 md:p-3 rounded-full z-10">
               {isPlaying ? <Pause className="w-4 h-4 md:w-6 md:h-6" /> : <Play className="w-4 h-4 md:w-6 md:h-6" />}
             </button>
-            <button onClick={toggleMute} className="absolute top-2 right-2 md:top-4 md:right-4 bg-black/50 text-white p-2 md:p-3 rounded-full z-10">
+            <button onClick={() => videoRef.current && (videoRef.current.muted = !videoRef.current.muted, setIsMuted(!isMuted))} className="absolute top-2 right-2 md:top-4 md:right-4 bg-black/50 text-white p-2 md:p-3 rounded-full z-10">
               {isMuted ? <VolumeX className="w-4 h-4 md:w-6 md:h-6" /> : <Volume2 className="w-4 h-4 md:w-6 md:h-6" />}
             </button>
             {showNextButton && (
               <div className="absolute bottom-12 md:bottom-20 left-1/2 -translate-x-1/2 z-10 px-4">
-                <button onClick={() => router.push("/final-step")} className="bg-green-500 hover:bg-green-600 text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg animate-pulse">
+                <button onClick={() => router.push("/final-step")} className="bg-green-500 hover:bg-green-600 text-white font-bold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-full transition-colors shadow-lg animate-pulse">
                   NEXT STEP →
                 </button>
               </div>
@@ -107,7 +87,9 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center mt-4">
-            <div className="bg-blue-600 text-white text-xs md:text-sm font-medium px-3 md:px-4 py-2 rounded-full">73 people are watching right now</div>
+            <div className="bg-blue-600 text-white text-xs md:text-sm font-medium px-3 md:px-4 py-2 rounded-full">
+              73 people are watching right now
+            </div>
           </div>
 
           <div className="mt-6 md:mt-8">
@@ -116,21 +98,45 @@ export default function Home() {
                 <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight px-2">
                   This Could Be Your Turning Point! Click "Check Availability" Now Before This Opportunity Disappears
                 </h2>
-                <button onClick={() => setShowForm(true)} className="bg-[#5B5FED] text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg w-full sm:w-auto">
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="bg-[#5B5FED] hover:bg-[#4A4EDD] text-white font-bold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-full transition-colors shadow-lg w-full sm:w-auto"
+                >
                   CHECK AVAILABILITY
                 </button>
               </div>
             ) : (
               <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-6 md:p-8 lg:p-12 max-w-4xl mx-auto">
+                <div className="text-center mb-4 md:mb-6">
+                  <p className="text-gray-600 text-base md:text-lg">
+                    <span className="font-semibold">Hurry up!</span> Only 2 spots available!
+                  </p>
+                </div>
                 <form onSubmit={handleLeadSubmit}>
                   <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+                    <div className="text-center md:text-left">
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">START NOW - RISK FREE!</h2>
+                      <p className="text-lg md:text-xl text-gray-800 mb-4 md:mb-6">
+                        SUBMIT YOUR DETAILS TO UNLOCK <span className="font-bold">EXCLUSIVE ACCESS</span>
+                      </p>
+                      <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-3 items-center">
+                        <div className="text-xs text-gray-600 font-medium">McAfee SECURE</div>
+                        <div className="text-xs text-gray-600 font-medium">VeriSign</div>
+                        <div className="text-xs text-gray-600 font-medium">Symantec</div>
+                        <div className="text-xs text-gray-600 font-medium">GeoTrust</div>
+                        <div className="text-xs text-gray-600 font-medium">SSL</div>
+                      </div>
+                    </div>
                     <div className="space-y-3 md:space-y-4">
-                      <input name="firstName" value={leadData.firstName} onChange={handleLeadInputChange} placeholder="FIRST NAME" className="w-full px-6 py-4 border-2 border-gray-300 rounded-full" required />
-                      <input name="lastName" value={leadData.lastName} onChange={handleLeadInputChange} placeholder="LAST NAME" className="w-full px-6 py-4 border-2 border-gray-300 rounded-full" required />
-                      <input name="email" type="email" value={leadData.email} onChange={handleLeadInputChange} placeholder="EMAIL" className="w-full px-6 py-4 border-2 border-gray-300 rounded-full" required />
-                      <input name="phone" type="tel" value={leadData.phone} onChange={handleLeadInputChange} placeholder="201-555-0123" className="w-full px-6 py-4 border-2 border-gray-300 rounded-full" required />
+                      <input type="text" name="firstName" value={leadData.firstName} onChange={handleLeadInputChange} placeholder="FIRST NAME" className="w-full px-6 py-4 border-2 border-gray-300 rounded-full text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#5B5FED] transition-colors" required />
+                      <input type="text" name="lastName" value={leadData.lastName} onChange={handleLeadInputChange} placeholder="LAST NAME" className="w-full px-6 py-4 border-2 border-gray-300 rounded-full text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#5B5FED] transition-colors" required />
+                      <input type="email" name="email" value={leadData.email} onChange={handleLeadInputChange} placeholder="EMAIL" className="w-full px-6 py-4 border-2 border-gray-300 rounded-full text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#5B5FED] transition-colors" required />
+                      <div className="relative">
+                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500">US +1</span>
+                        <input type="tel" name="phone" value={leadData.phone} onChange={handleLeadInputChange} placeholder="201-555-0123" className="w-full pl-24 pr-6 py-4 border-2 border-gray-300 rounded-full text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#5B5FED] transition-colors" required />
+                      </div>
                       {submitMessage && <div className="p-3 rounded-lg text-sm text-center bg-green-100 text-green-800">{submitMessage}</div>}
-                      <button type="submit" disabled={isSubmitting} className="w-full bg-[#5B5FED] text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg">
+                      <button type="submit" disabled={isSubmitting} className="w-full bg-[#5B5FED] hover:bg-[#4A4EDD] disabled:bg-gray-400 text-white font-bold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 rounded-full transition-colors shadow-lg">
                         {isSubmitting ? "SUBMITTING..." : "GAIN ACCESS"}
                       </button>
                     </div>
